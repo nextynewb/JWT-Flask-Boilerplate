@@ -1,8 +1,6 @@
 from flask import Flask, request, session,  jsonify, render_template, redirect, url_for
 import datetime
-from functools import wraps
 import jwt
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'LoremIpsum'
