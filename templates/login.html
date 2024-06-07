@@ -82,7 +82,8 @@
                             if(response.status == 'success'){
                                 token = response.token;
                                 localStorage.setItem('jwtToken', token);  // Store token in localStorage
-                                alert(token)
+                                // Redirect to protected page
+                                window.location.href = '/protected';
                             }else{
                                 alert(response.message);
                             }

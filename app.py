@@ -2,11 +2,10 @@ from flask import Flask, request, session,  jsonify, render_template, redirect, 
 import datetime
 from functools import wraps
 import jwt
-import os
+
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'HelloWorld'
-
+app.config['SECRET_KEY'] = 'LoremIpsum'
 
 dummy_user_password = {
     'admin': 'admin123',
@@ -37,7 +36,6 @@ def authenticate(username, password):
         print('Login failed')
         return False
     
-
 def generate_jwt(username):
     payload = {
         'username': username,
@@ -45,17 +43,6 @@ def generate_jwt(username):
     }
     token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
     return token
-
-
-# def login_required(f):
-#     @wraps(f)
-#     def decorated_function(*args, **kwargs):
-#         if 'username' not in session:
-#             return jsonify({'error': 'Login required!'}), 403
-#         return f(*args, **kwargs)
-#     return decorated_function
-
-
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -67,6 +54,7 @@ def login():
         user_auth = authenticate(username, password)
 
         if user_auth:
+            session['username'] = username
             token = generate_jwt(username)
             print(token)
             return {
@@ -85,20 +73,23 @@ def login():
         error = request.args.get('error')
         print(error)
         return render_template('login.html', error = error)
-    
-@app.route('/index')
-def index():
-    auth_header = request.headers.get('Authorization')
-    print(auth_header)
 
-    return render_template('index.html')
+@app.route('/logout')
+def logout():
+    return render_template('logout.html')
 
-@app.route('/decode')
-def decode():
-    token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzE3NjY3NTQ2fQ.gPB0NO4SPUejK2zOICikI-YTolRUIQaDeMMQSWunP80'
-    decoded = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-    print(decoded)
-    return decoded
+@app.route('/protected')
+def protected():
+    return render_template('protected.html')
+
+# API Fields
+
+@app.route('/api/user')
+def user():
+    token = request.headers.get('Authorization')
+    decode_token = jwt.decode(token, app.config['SECRET_KEY'], algorithms='HS256')
+    print(decode_token)
+    return jsonify({'username': decode_token['username']})
 
 if __name__ == '__main__':
     app.run(debug=True)
